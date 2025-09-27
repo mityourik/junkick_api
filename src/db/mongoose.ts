@@ -3,10 +3,24 @@ import { config } from '../config';
 
 const connectDB = async (): Promise<void> => {
   try {
-    await mongoose.connect(config.mongodb.uri);
-    console.log('✅ MongoDB подключен успешно');
+    const options = {
+      // Настройки для стабильности соединения
+      maxPoolSize: 10, // Максимальное количество соединений в пуле
+      serverSelectionTimeoutMS: 5000, // Таймаут выбора сервера
+      socketTimeoutMS: 45000, // Таймаут сокета
+      // Удалены устаревшие опции useNewUrlParser, useUnifiedTopology, bufferMaxEntries, bufferCommands
+    };
+
+    await mongoose.connect(config.mongodb.uri, options);
+    console.log('✅ MongoDB Atlas подключен успешно');
+    console.log(`📍 Подключение к: ${config.mongodb.uri.replace(/\/\/.*@/, '//***:***@')}`);
   } catch (error) {
-    console.error('❌ Ошибка подключения к MongoDB:', error);
+    console.error('❌ Ошибка подключения к MongoDB Atlas:', error);
+    console.error('🔍 Проверьте:');
+    console.error('   - Правильность URI подключения');
+    console.error('   - Доступность интернета');
+    console.error('   - Настройки firewall');
+    console.error('   - IP адреса в whitelist MongoDB Atlas');
     process.exit(1);
   }
 };

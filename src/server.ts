@@ -18,7 +18,7 @@ import dictionariesRoutes from './routes/dictionaries.routes';
 const app = express();
 
 // Подключение к базе данных
-connectDB();
+connectDB().catch(console.error);
 
 // Безопасность
 app.use(helmet());
@@ -26,7 +26,10 @@ app.use(helmet());
 // CORS
 app.use(cors({
   origin: config.cors.origin,
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 }));
 
 // Rate limiting
@@ -58,6 +61,12 @@ app.use('/api/projects', projectsRoutes);
 app.use('/api/applications', applicationsRoutes);
 app.use('/api', dictionariesRoutes);
 
+// Альтернативные маршруты без префикса /api для совместимости с фронтом
+app.use('/auth', authRoutes);
+app.use('/users', usersRoutes);
+app.use('/projects', projectsRoutes);
+app.use('/applications', applicationsRoutes);
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({
@@ -66,6 +75,12 @@ app.get('/health', (req, res) => {
     uptime: process.uptime()
   });
 });
+
+// Favicon handler (to prevent 404 errors)
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
+
 
 // Обработка 404
 app.use(notFoundHandler);

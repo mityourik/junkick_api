@@ -1,12 +1,13 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IUser extends Document {
+  customId: string;
   name: string;
   email: string;
-  passwordHash: string;
-  role: 'admin' | 'тимлид' | 'заказчик' | 'разработчик' | 'дизайнер' | 'тестировщик';
+  password: string;
+  role: 'admin' | 'тимлид' | 'заказчик' | 'разработчик' | 'дизайнер' | 'тестировщик' | 'джун';
   avatar?: string;
-  skills: string;
+  skills: string[];
   bio?: string;
   experience: number;
   location?: string;
@@ -15,6 +16,12 @@ export interface IUser extends Document {
 }
 
 const UserSchema = new Schema<IUser>({
+  customId: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
   name: {
     type: String,
     required: true,
@@ -29,25 +36,24 @@ const UserSchema = new Schema<IUser>({
     trim: true,
     index: true
   },
-  passwordHash: {
+  password: {
     type: String,
     required: true
   },
   role: {
     type: String,
-    enum: ['admin', 'тимлид', 'заказчик', 'разработчик', 'дизайнер', 'тестировщик'],
+    enum: ['admin', 'тимлид', 'заказчик', 'разработчик', 'дизайнер', 'тестировщик', 'джун'],
     required: true,
-    default: 'разработчик'
+    default: 'джун'
   },
   avatar: {
     type: String,
     default: null
   },
-  skills: {
+  skills: [{
     type: String,
-    required: true,
-    maxlength: 500
-  },
+    required: true
+  }],
   bio: {
     type: String,
     maxlength: 1000

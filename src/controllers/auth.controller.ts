@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
 import { User } from '../models/User.model';
 import { Session } from '../models/Session.model';
 import { generateToken, authenticateToken } from '../middleware/auth';
@@ -10,33 +9,20 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   // Поиск пользователя по email
-  const user = await User.findOne({ email }).select('+passwordHash');
+  const user = await User.findOne({ email });
   if (!user) {
-    throw createError('Неверный email или пароль', 401, 'INVALID_CREDENTIALS');
+    throw createError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
   }
 
-  // Проверка пароля
-  const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-  if (!isPasswordValid) {
-    throw createError('Неверный email или пароль', 401, 'INVALID_CREDENTIALS');
+  // Проверка пароля (в открытом виде)
+  if (user.password !== password) {
+    throw createError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
   }
-
-  // Генерация токена
-  const accessToken = generateToken(user);
-
-  // Создание сессии
-  await Session.create({
-    userId: user._id,
-    type: 'login'
-  });
 
   // Возврат данных пользователя без пароля
-  const userResponse = await User.findById(user._id).select('-passwordHash');
+  const { password: _, ...userResponse } = user.toObject();
 
-  res.json({
-    user: userResponse,
-    accessToken
-  });
+  res.json(userResponse);
 });
 
 // POST /auth/logout

@@ -6,7 +6,12 @@ const connectDB = async (): Promise<void> => {
     const isDevelopment = config.nodeEnv === 'development';
 
     const connectionOptions = {
-      ...config.mongodb.options,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
+      retryWrites: true,
+      retryReads: true,
       ...(isDevelopment && {
         autoIndex: true,
         autoCreate: true
@@ -19,12 +24,12 @@ const connectDB = async (): Promise<void> => {
 
     await mongoose.connect(config.mongodb.uri, connectionOptions);
 
-    console.log('✅ MongoDB подключен успешно');
-    console.log(`📊 База данных: ${mongoose.connection.db?.databaseName}`);
-    console.log(`🌍 Окружение: ${config.nodeEnv}`);
-    console.log(`🔗 URI: ${config.mongodb.uri.replace(/\/\/.*@/, '//***:***@')}`);
+    console.log('MongoDB подключен успешно');
+    console.log(`База данных: ${mongoose.connection.db?.databaseName}`);
+    console.log(`Окружение: ${config.nodeEnv}`);
+    console.log(`URI: ${config.mongodb.uri.replace(/\/\/.*@/, '//***:***@')}`);
   } catch (error) {
-    console.error('❌ Ошибка подключения к MongoDB:', error);
+    console.error('Ошибка подключения к MongoDB:', error);
     process.exit(1);
   }
 };

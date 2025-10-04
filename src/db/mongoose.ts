@@ -3,10 +3,28 @@ import { config } from '../config';
 
 const connectDB = async (): Promise<void> => {
   try {
-    await mongoose.connect(config.mongodb.uri);
-    console.log('MongoDB подключен успешно');
+    const isDevelopment = config.nodeEnv === 'development';
+
+    const connectionOptions = {
+      ...config.mongodb.options,
+      ...(isDevelopment && {
+        autoIndex: true,
+        autoCreate: true
+      }),
+      ...(!isDevelopment && {
+        autoIndex: false,
+        autoCreate: false
+      })
+    };
+
+    await mongoose.connect(config.mongodb.uri, connectionOptions);
+
+    console.log('✅ MongoDB подключен успешно');
+    console.log(`📊 База данных: ${mongoose.connection.db?.databaseName}`);
+    console.log(`🌍 Окружение: ${config.nodeEnv}`);
+    console.log(`🔗 URI: ${config.mongodb.uri.replace(/\/\/.*@/, '//***:***@')}`);
   } catch (error) {
-    console.error('Ошибка подключения к MongoDB:', error);
+    console.error('❌ Ошибка подключения к MongoDB:', error);
     process.exit(1);
   }
 };

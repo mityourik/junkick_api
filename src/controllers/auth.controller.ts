@@ -5,6 +5,49 @@ import { Session } from '../models/Session.model';
 import { generateToken, authenticateToken } from '../middleware/auth';
 import { createError, asyncHandler } from '../middleware/error';
 
+export const register = asyncHandler(async (req: Request, res: Response) => {
+  const { name, email, password, role, avatar, skills, bio, experience, location, portfolio } = req.body;
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw createError('Пользователь с таким email уже существует', 409, 'USER_EXISTS');
+  }
+
+  // Маппим роль "джун" на "разработчик" для совместимости с фронтендом
+  const mappedRole = role === 'джун' ? 'разработчик' : role;
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  const user = new User({
+    name,
+    email,
+    passwordHash,
+    role: mappedRole,
+    avatar: avatar || null,
+    skills: skills || '',
+    bio,
+    experience,
+    location,
+    portfolio
+  });
+
+  await user.save();
+
+  const accessToken = generateToken(user);
+
+  await Session.create({
+    userId: user._id,
+    type: 'login'
+  });
+
+  const userResponse = await User.findById(user._id).select('-passwordHash');
+
+  res.status(201).json({
+    user: userResponse,
+    accessToken
+  });
+});
+
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 

@@ -67,7 +67,7 @@ export const updateApplicationStatus = asyncHandler(async (req: Request, res: Re
     throw createError('Проект не найден', 404, 'PROJECT_NOT_FOUND');
   }
 
-  if (req.user?.role !== 'admin' && project.ownerId.toString() !== (req.user?._id as any)?.toString()) {
+  if (project.ownerId.toString() !== (req.user?._id as any)?.toString()) {
     throw createError('Нет прав для изменения статуса заявки', 403, 'APPLICATION_ACCESS_DENIED');
   }
 

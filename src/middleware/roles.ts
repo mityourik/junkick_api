@@ -57,10 +57,6 @@ export const requireProjectOwnership = async (req: Request, res: Response, next:
       });
     }
 
-    if (req.user.role === 'admin') {
-      req.project = project;
-      return next();
-    }
 
     if (project.ownerId.toString() !== (req.user._id as any).toString()) {
       return res.status(403).json({
@@ -95,9 +91,6 @@ export const requireSelfOrAdmin = (req: Request, res: Response, next: NextFuncti
 
   const userId = req.params.id;
   
-  if (req.user.role === 'admin') {
-    return next();
-  }
 
   if ((req.user._id as any).toString() !== userId) {
     return res.status(403).json({
@@ -121,7 +114,7 @@ export const requireProjectCreationRole = (req: Request, res: Response, next: Ne
     });
   }
 
-  const allowedRoles = ['тимлид', 'заказчик', 'admin'];
+  const allowedRoles = ['тимлид', 'заказчик'];
   
   if (!allowedRoles.includes(req.user.role)) {
     return res.status(403).json({

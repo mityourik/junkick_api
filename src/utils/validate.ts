@@ -7,6 +7,24 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Пароль обязателен')
 });
 
+export const registerSchema = z.object({
+  name: z.string().min(1, 'Имя обязательно').max(100, 'Имя слишком длинное'),
+  email: z.string().email('Некорректный email'),
+  password: z.string().min(6, 'Пароль должен содержать минимум 6 символов'),
+  role: z.enum(['разработчик', 'тимлид', 'заказчик']).default('разработчик'),
+  avatar: z.string().optional(),
+  skills: z.union([z.array(z.string()), z.string()]).optional().transform(val => {
+    if (Array.isArray(val)) {
+      return val.length > 0 ? val.join(', ') : 'Не указано';
+    }
+    return val || 'Не указано';
+  }),
+  bio: z.string().max(1000, 'Биография слишком длинная').optional(),
+  experience: z.number().min(0, 'Опыт не может быть отрицательным').max(50, 'Опыт слишком большой').default(0),
+  location: z.string().max(100, 'Локация слишком длинная').optional(),
+  portfolio: z.string().max(500, 'Портфолио слишком длинное').optional()
+});
+
 export const userUpdateSchema = z.object({
   name: z.string().min(1, 'Имя обязательно').max(100, 'Имя слишком длинное').optional(),
   skills: z.string().max(500, 'Навыки слишком длинные').optional(),
@@ -14,7 +32,7 @@ export const userUpdateSchema = z.object({
   experience: z.number().min(0, 'Опыт не может быть отрицательным').max(50, 'Опыт слишком большой').optional(),
   location: z.string().max(100, 'Локация слишком длинная').optional(),
   portfolio: z.string().max(500, 'Портфолио слишком длинное').optional(),
-  role: z.enum(['admin', 'тимлид', 'заказчик', 'разработчик', 'дизайнер', 'тестировщик']).optional()
+  role: z.enum(['разработчик', 'тимлид', 'заказчик']).optional()
 });
 
 export const passwordChangeSchema = z.object({
@@ -53,15 +71,12 @@ export const applicationStatusUpdateSchema = z.object({
 });
 
 export const projectFiltersSchema = z.object({
-  q: z.string().optional(),
+  page: z.string().regex(/^\d+$/).transform(Number).default('1'),
+  limit: z.string().regex(/^\d+$/).transform(Number).default('20'),
   category: z.string().optional(),
-  status: z.enum(['активный', 'завершен', 'приостановлен', 'в поиске команды']).optional(),
-  ownerId: z.string().optional(),
-  neededRoles: z.string().optional(),
   tech: z.string().optional(),
-  page: z.string().regex(/^\d+$/).transform(Number).refine(n => n > 0, 'Страница должна быть больше 0').optional(),
-  limit: z.string().regex(/^\d+$/).transform(Number).refine(n => n > 0 && n <= 100, 'Лимит должен быть от 1 до 100').optional(),
-  sort: z.enum(['createdAt', '-createdAt', 'name', '-name']).optional()
+  status: z.string().optional(),
+  search: z.string().optional()
 });
 
 export const teamMemberSchema = z.object({
@@ -75,43 +90,18 @@ export const validateBody = (schema: ZodSchema) => {
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const validationErrors = error.errors.map(err => ({
+        const errorMessages = error.errors.map(err => ({
           field: err.path.join('.'),
-          message: err.message,
-          code: err.code
+          message: err.message
         }));
-
-        return next(createError(
-          'Ошибка валидации данных',
-          400,
-          'VALIDATION_ERROR',
-          validationErrors
-        ));
-      }
-      next(error);
-    }
-  };
-};
-
-export const validateQuery = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    try {
-      req.query = schema.parse(req.query);
-      next();
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const validationErrors = error.errors.map(err => ({
-          field: err.path.join('.'),
-          message: err.message,
-          code: err.code
-        }));
-
-        return next(createError(
-          'Ошибка валидации параметров запроса',
-          400,
-          'QUERY_VALIDATION_ERROR',
-          validationErrors
-        ));
+        
+        return res.status(400).json({
+          error: {
+            message: 'Ошибка валидации',
+            code: 'VALIDATION_ERROR',
+            details: errorMessages
+          }
+        });
       }
       next(error);
     }
@@ -125,18 +115,43 @@ export const validateParams = (schema: ZodSchema) => {
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const validationErrors = error.errors.map(err => ({
+        const errorMessages = error.errors.map(err => ({
           field: err.path.join('.'),
-          message: err.message,
-          code: err.code
+          message: err.message
         }));
+        
+        return res.status(400).json({
+          error: {
+            message: 'Ошибка валидации параметров',
+            code: 'VALIDATION_ERROR',
+            details: errorMessages
+          }
+        });
+      }
+      next(error);
+    }
+  };
+};
 
-        return next(createError(
-          'Ошибка валидации параметров URL',
-          400,
-          'PARAMS_VALIDATION_ERROR',
-          validationErrors
-        ));
+export const validateQuery = (schema: ZodSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      req.query = schema.parse(req.query);
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map(err => ({
+          field: err.path.join('.'),
+          message: err.message
+        }));
+        
+        return res.status(400).json({
+          error: {
+            message: 'Ошибка валидации query параметров',
+            code: 'VALIDATION_ERROR',
+            details: errorMessages
+          }
+        });
       }
       next(error);
     }

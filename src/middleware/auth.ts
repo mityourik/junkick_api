@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import { User, IUser } from '../models/User.model';
 import { config } from '../config';
 
-// Расширяем интерфейс Request для добавления user
 declare global {
   namespace Express {
     interface Request {
@@ -21,7 +20,7 @@ export interface JWTPayload {
 export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
       return res.status(401).json({
@@ -34,7 +33,6 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
 
     const decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
     
-    // Получаем пользователя из базы данных
     const user = await User.findById(decoded.userId).select('-passwordHash');
     if (!user) {
       return res.status(401).json({
@@ -102,7 +100,6 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
     
     next();
   } catch (error) {
-    // Игнорируем ошибки для optional auth
     next();
   }
 };

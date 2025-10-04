@@ -3,17 +3,14 @@ import { Application } from '../models/Application.model';
 import { Project } from '../models/Project.model';
 import { createError, asyncHandler } from '../middleware/error';
 
-// POST /applications
 export const createApplication = asyncHandler(async (req: Request, res: Response) => {
   const { projectId, name, role, message } = req.body;
 
-  // Проверяем существование проекта
   const project = await Project.findById(projectId);
   if (!project) {
     throw createError('Проект не найден', 404, 'PROJECT_NOT_FOUND');
   }
 
-  // Если пользователь авторизован, используем его данные
   let userId = undefined;
   let applicantName = name;
 
@@ -22,7 +19,6 @@ export const createApplication = asyncHandler(async (req: Request, res: Response
     applicantName = req.user.name;
   }
 
-  // Создаем заявку
   const application = await Application.create({
     projectId,
     userId,
@@ -40,17 +36,14 @@ export const createApplication = asyncHandler(async (req: Request, res: Response
   });
 });
 
-// GET /projects/:id/applications
 export const getProjectApplications = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  // Проверяем существование проекта
   const project = await Project.findById(id);
   if (!project) {
     throw createError('Проект не найден', 404, 'PROJECT_NOT_FOUND');
   }
 
-  // Получаем заявки для проекта
   const applications = await Application.find({ projectId: id })
     .populate('userId', 'name email avatar')
     .sort({ createdAt: -1 });
@@ -60,7 +53,6 @@ export const getProjectApplications = asyncHandler(async (req: Request, res: Res
   });
 });
 
-// PATCH /applications/:id
 export const updateApplicationStatus = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -70,18 +62,15 @@ export const updateApplicationStatus = asyncHandler(async (req: Request, res: Re
     throw createError('Заявка не найдена', 404, 'APPLICATION_NOT_FOUND');
   }
 
-  // Получаем проект для проверки прав доступа
   const project = await Project.findById(application.projectId);
   if (!project) {
     throw createError('Проект не найден', 404, 'PROJECT_NOT_FOUND');
   }
 
-  // Проверяем права доступа (владелец проекта или админ)
   if (req.user?.role !== 'admin' && project.ownerId.toString() !== (req.user?._id as any)?.toString()) {
     throw createError('Нет прав для изменения статуса заявки', 403, 'APPLICATION_ACCESS_DENIED');
   }
 
-  // Обновляем статус заявки
   application.status = status;
   await application.save();
 
@@ -94,7 +83,6 @@ export const updateApplicationStatus = asyncHandler(async (req: Request, res: Re
   });
 });
 
-// GET /applications (для получения заявок пользователя)
 export const getUserApplications = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
     throw createError('Требуется аутентификация', 401, 'AUTHENTICATION_REQUIRED');

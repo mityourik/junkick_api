@@ -30,13 +30,10 @@ const teamMemberParamsSchema = z.object({
   userId: z.string().min(1, 'ID пользователя обязателен')
 });
 
-// GET /projects
 router.get('/', optionalAuth, validateQuery(projectFiltersSchema), getProjects);
 
-// GET /projects/:id
 router.get('/:id', optionalAuth, validateParams(projectIdSchema), getProject);
 
-// POST /projects
 router.post(
   '/',
   authenticateToken,
@@ -45,7 +42,6 @@ router.post(
   createProject
 );
 
-// PATCH /projects/:id
 router.patch(
   '/:id',
   authenticateToken,
@@ -55,7 +51,6 @@ router.patch(
   updateProject
 );
 
-// DELETE /projects/:id
 router.delete(
   '/:id',
   authenticateToken,
@@ -64,7 +59,6 @@ router.delete(
   deleteProject
 );
 
-// POST /projects/:id/team
 router.post(
   '/:id/team',
   authenticateToken,
@@ -74,7 +68,6 @@ router.post(
   addTeamMember
 );
 
-// DELETE /projects/:id/team/:userId
 router.delete(
   '/:id/team/:userId',
   authenticateToken,

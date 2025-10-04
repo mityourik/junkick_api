@@ -33,10 +33,9 @@ const TechnologySchema = new Schema<ITechnology>({
     maxlength: 7
   }
 }, {
-  _id: false // Используем id как _id
+  _id: false
 });
 
-// Устанавливаем id как _id
 TechnologySchema.pre('save', function(next) {
   this._id = this.id;
   next();

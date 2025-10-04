@@ -47,7 +47,6 @@ const ApplicationSchema = new Schema<IApplication>({
   timestamps: { createdAt: true, updatedAt: false }
 });
 
-// Индексы
 ApplicationSchema.index({ projectId: 1 });
 ApplicationSchema.index({ userId: 1 });
 

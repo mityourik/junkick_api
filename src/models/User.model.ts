@@ -70,7 +70,6 @@ const UserSchema = new Schema<IUser>({
   timestamps: { createdAt: true, updatedAt: false }
 });
 
-// Индексы
 UserSchema.index({ email: 1 }, { unique: true });
 
 export const User = mongoose.model<IUser>('User', UserSchema);

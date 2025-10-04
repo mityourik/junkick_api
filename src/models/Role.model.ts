@@ -32,10 +32,9 @@ const RoleSchema = new Schema<IRole>({
     maxlength: 7
   }
 }, {
-  _id: false // Используем id как _id
+  _id: false
 });
 
-// Устанавливаем id как _id
 RoleSchema.pre('save', function(next) {
   this._id = this.id;
   next();

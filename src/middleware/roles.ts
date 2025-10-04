@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Project, IProject } from '../models/Project.model';
 
-// Расширяем интерфейс Request для добавления project
 declare global {
   namespace Express {
     interface Request {
@@ -10,7 +9,6 @@ declare global {
   }
 }
 
-// Проверка роли пользователя
 export const requireRole = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
@@ -36,7 +34,6 @@ export const requireRole = (allowedRoles: string[]) => {
   };
 };
 
-// Проверка владения проектом
 export const requireProjectOwnership = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -60,13 +57,11 @@ export const requireProjectOwnership = async (req: Request, res: Response, next:
       });
     }
 
-    // Админ имеет доступ ко всем проектам
     if (req.user.role === 'admin') {
       req.project = project;
       return next();
     }
 
-    // Проверяем владение проектом
     if (project.ownerId.toString() !== (req.user._id as any).toString()) {
       return res.status(403).json({
         error: {
@@ -88,7 +83,6 @@ export const requireProjectOwnership = async (req: Request, res: Response, next:
   }
 };
 
-// Проверка доступа к собственному профилю или админ
 export const requireSelfOrAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
     return res.status(401).json({
@@ -101,12 +95,10 @@ export const requireSelfOrAdmin = (req: Request, res: Response, next: NextFuncti
 
   const userId = req.params.id;
   
-  // Админ может редактировать любого пользователя
   if (req.user.role === 'admin') {
     return next();
   }
 
-  // Пользователь может редактировать только свой профиль
   if ((req.user._id as any).toString() !== userId) {
     return res.status(403).json({
       error: {
@@ -119,7 +111,6 @@ export const requireSelfOrAdmin = (req: Request, res: Response, next: NextFuncti
   next();
 };
 
-// Проверка ролей для создания проекта
 export const requireProjectCreationRole = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
     return res.status(401).json({

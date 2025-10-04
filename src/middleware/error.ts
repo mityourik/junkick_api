@@ -14,14 +14,13 @@ export const createError = (message: string, statusCode: number = 500, code?: st
   return error;
 };
 
-// Централизованный обработчик ошибок
 export const errorHandler = (
   error: AppError,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  console.error('🚨 Error:', {
+  console.error('Error:', {
     message: error.message,
     stack: error.stack,
     url: req.url,
@@ -32,7 +31,6 @@ export const errorHandler = (
   const statusCode = error.statusCode || 500;
   const code = error.code || 'INTERNAL_SERVER_ERROR';
 
-  // Валидационные ошибки Mongoose
   if (error.name === 'ValidationError') {
     const validationErrors = Object.values((error as any).errors).map((err: any) => ({
       field: err.path,
@@ -48,7 +46,6 @@ export const errorHandler = (
     });
   }
 
-  // Ошибки дублирования (unique constraint)
   if (error.name === 'MongoServerError' && (error as any).code === 11000) {
     const field = Object.keys((error as any).keyPattern)[0];
     return res.status(409).json({
@@ -60,7 +57,6 @@ export const errorHandler = (
     });
   }
 
-  // Ошибки ObjectId
   if (error.name === 'CastError') {
     return res.status(400).json({
       error: {
@@ -70,7 +66,6 @@ export const errorHandler = (
     });
   }
 
-  // Стандартная обработка ошибок
   res.status(statusCode).json({
     error: {
       message: error.message || 'Внутренняя ошибка сервера',
@@ -80,7 +75,6 @@ export const errorHandler = (
   });
 };
 
-// Middleware для обработки 404 ошибок
 export const notFoundHandler = (req: Request, res: Response, next: NextFunction) => {
   const error = createError(
     `Маршрут ${req.method} ${req.url} не найден`,
@@ -90,7 +84,6 @@ export const notFoundHandler = (req: Request, res: Response, next: NextFunction)
   next(error);
 };
 
-// Async wrapper для автоматической обработки ошибок в async функциях
 export const asyncHandler = (fn: Function) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);

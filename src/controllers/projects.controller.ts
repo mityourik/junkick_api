@@ -3,7 +3,6 @@ import { Project } from '../models/Project.model';
 import { User } from '../models/User.model';
 import { createError, asyncHandler } from '../middleware/error';
 
-// GET /projects
 export const getProjects = asyncHandler(async (req: Request, res: Response) => {
   const {
     q,
@@ -17,45 +16,36 @@ export const getProjects = asyncHandler(async (req: Request, res: Response) => {
     sort = '-createdAt'
   } = req.query;
 
-  // Построение фильтра
   const filter: any = {};
 
-  // Текстовый поиск
   if (q) {
     filter.$text = { $search: q as string };
   }
 
-  // Фильтр по категории
   if (category) {
     filter.category = category;
   }
 
-  // Фильтр по статусу
   if (status) {
     filter.status = status;
   }
 
-  // Фильтр по владельцу
   if (ownerId) {
     filter.ownerId = ownerId;
   }
 
-  // Фильтр по нужным ролям
   if (neededRoles) {
     filter.neededRoles = { $in: (neededRoles as string).split(',') };
   }
 
-  // Фильтр по технологиям
   if (tech) {
     filter.tech = { $in: (tech as string).split(',') };
   }
 
-  // Настройка пагинации
   const pageNum = parseInt(page as string);
   const limitNum = parseInt(limit as string);
   const skip = (pageNum - 1) * limitNum;
 
-  // Настройка сортировки
   const sortOptions: any = {};
   const sortStr = Array.isArray(sort) ? sort[0] : sort;
   if (typeof sortStr === 'string') {
@@ -66,12 +56,10 @@ export const getProjects = asyncHandler(async (req: Request, res: Response) => {
     }
   }
 
-  // Если используется текстовый поиск, добавляем сортировку по релевантности
   if (q) {
     sortOptions.score = { $meta: 'textScore' };
   }
 
-  // Выполнение запроса
   const projects = await Project.find(filter)
     .populate('ownerId', 'name email avatar')
     .populate('teamMembers', 'name email avatar')
@@ -79,7 +67,6 @@ export const getProjects = asyncHandler(async (req: Request, res: Response) => {
     .skip(skip)
     .limit(limitNum);
 
-  // Подсчет общего количества
   const total = await Project.countDocuments(filter);
 
   res.json({
@@ -93,7 +80,6 @@ export const getProjects = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// GET /projects/:id
 export const getProject = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -110,7 +96,6 @@ export const getProject = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// POST /projects
 export const createProject = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
     throw createError('Требуется аутентификация', 401, 'AUTHENTICATION_REQUIRED');
@@ -134,12 +119,10 @@ export const createProject = asyncHandler(async (req: Request, res: Response) =>
   });
 });
 
-// PATCH /projects/:id
 export const updateProject = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const updateData = req.body;
 
-  // Удаляем поля, которые нельзя обновлять напрямую
   delete updateData._id;
   delete updateData.ownerId;
   delete updateData.createdAt;
@@ -163,7 +146,6 @@ export const updateProject = asyncHandler(async (req: Request, res: Response) =>
   });
 });
 
-// DELETE /projects/:id
 export const deleteProject = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -175,12 +157,10 @@ export const deleteProject = asyncHandler(async (req: Request, res: Response) =>
   res.status(204).send();
 });
 
-// POST /projects/:id/team
 export const addTeamMember = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { userId } = req.body;
 
-  // Проверяем существование пользователя
   const user = await User.findById(userId);
   if (!user) {
     throw createError('Пользователь не найден', 404, 'USER_NOT_FOUND');
@@ -191,17 +171,14 @@ export const addTeamMember = asyncHandler(async (req: Request, res: Response) =>
     throw createError('Проект не найден', 404, 'PROJECT_NOT_FOUND');
   }
 
-  // Проверяем, не является ли пользователь уже участником
   if (project.teamMembers.includes(userId)) {
     throw createError('Пользователь уже является участником проекта', 409, 'USER_ALREADY_MEMBER');
   }
 
-  // Проверяем, не превышает ли добавление максимальный размер команды
   if (project.currentTeam >= project.teamSize) {
     throw createError('Команда уже достигла максимального размера', 400, 'TEAM_SIZE_EXCEEDED');
   }
 
-  // Добавляем пользователя в команду
   project.teamMembers.push(userId);
   project.currentTeam += 1;
   await project.save();
@@ -215,7 +192,6 @@ export const addTeamMember = asyncHandler(async (req: Request, res: Response) =>
   });
 });
 
-// DELETE /projects/:id/team/:userId
 export const removeTeamMember = asyncHandler(async (req: Request, res: Response) => {
   const { id, userId } = req.params;
 
@@ -224,18 +200,15 @@ export const removeTeamMember = asyncHandler(async (req: Request, res: Response)
     throw createError('Проект не найден', 404, 'PROJECT_NOT_FOUND');
   }
 
-  // Проверяем, что пользователь является участником команды
   const memberIndex = project.teamMembers.findIndex(memberId => memberId.toString() === userId);
   if (memberIndex === -1) {
     throw createError('Пользователь не является участником команды', 404, 'USER_NOT_MEMBER');
   }
 
-  // Нельзя удалить владельца проекта
   if (project.ownerId.toString() === userId) {
     throw createError('Нельзя удалить владельца проекта', 400, 'CANNOT_REMOVE_OWNER');
   }
 
-  // Удаляем пользователя из команды
   project.teamMembers.splice(memberIndex, 1);
   project.currentTeam -= 1;
   await project.save();

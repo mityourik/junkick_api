@@ -6,13 +6,10 @@ import { loginSchema } from '../utils/validate';
 
 const router = Router();
 
-// POST /auth/login
 router.post('/login', validateBody(loginSchema), login);
 
-// POST /auth/logout
 router.post('/logout', authenticateToken, logout);
 
-// GET /auth/me
 router.get('/me', authenticateToken, getMe);
 
 export default router;

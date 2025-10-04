@@ -27,10 +27,9 @@ const CategorySchema = new Schema<ICategory>({
     maxlength: 7
   }
 }, {
-  _id: false // Используем id как _id
+  _id: false
 });
 
-// Устанавливаем id как _id
 CategorySchema.pre('save', function(next) {
   this._id = this.id;
   next();

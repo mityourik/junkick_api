@@ -24,7 +24,6 @@ const projectIdSchema = z.object({
   id: z.string().min(1, 'ID проекта обязателен')
 });
 
-// POST /applications
 router.post(
   '/',
   optionalAuth,
@@ -32,16 +31,14 @@ router.post(
   createApplication
 );
 
-// GET /projects/:id/applications
 router.get(
   '/projects/:id',
   authenticateToken,
   validateParams(projectIdSchema),
-  requireRole(['admin']), // Только админы или владельцы проекта (проверка в контроллере)
+  requireRole(['admin']),
   getProjectApplications
 );
 
-// PATCH /applications/:id
 router.patch(
   '/:id',
   authenticateToken,
@@ -50,7 +47,6 @@ router.patch(
   updateApplicationStatus
 );
 
-// GET /applications (заявки пользователя)
 router.get(
   '/',
   authenticateToken,

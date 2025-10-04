@@ -22,7 +22,6 @@ const SessionSchema = new Schema<ISession>({
   timestamps: { createdAt: true, updatedAt: false }
 });
 
-// Индексы
 SessionSchema.index({ userId: 1 });
 SessionSchema.index({ createdAt: 1 });
 

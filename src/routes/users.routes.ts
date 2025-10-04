@@ -12,10 +12,8 @@ const userIdSchema = z.object({
   id: z.string().min(1, 'ID пользователя обязателен')
 });
 
-// GET /users/:id
 router.get('/:id', authenticateToken, validateParams(userIdSchema), getUser);
 
-// PATCH /users/:id
 router.patch(
   '/:id',
   authenticateToken,

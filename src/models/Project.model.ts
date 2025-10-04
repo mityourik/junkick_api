@@ -115,7 +115,6 @@ const ProjectSchema = new Schema<IProject>({
   timestamps: true
 });
 
-// Индексы
 ProjectSchema.index({ ownerId: 1 });
 ProjectSchema.index({ category: 1 });
 ProjectSchema.index({ status: 1 });
@@ -126,7 +125,6 @@ ProjectSchema.index({
   weights: { name: 10, description: 5 }
 });
 
-// Валидация: currentTeam не может быть больше teamSize
 ProjectSchema.pre('save', function(next) {
   if (this.currentTeam > this.teamSize) {
     next(new Error('currentTeam не может быть больше teamSize'));

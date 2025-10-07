@@ -6,15 +6,12 @@ import { generateToken, authenticateToken } from '../middleware/auth';
 import { createError, asyncHandler } from '../middleware/error';
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const { name, email, password, role, avatar, skills, bio, experience, location, portfolio } = req.body;
+  const { name, email, password, role } = req.body;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw createError('Пользователь с таким email уже существует', 409, 'USER_EXISTS');
   }
-
-  // Маппим роль "джун" на "разработчик" для совместимости с фронтендом
-  const mappedRole = role === 'джун' ? 'разработчик' : role;
 
   const passwordHash = await bcrypt.hash(password, 12);
 
@@ -22,13 +19,13 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     name,
     email,
     passwordHash,
-    role: mappedRole,
-    avatar: avatar || null,
-    skills: skills || '',
-    bio,
-    experience,
-    location,
-    portfolio
+    role,
+    avatar: null,
+    skills: 'Не указано',
+    bio: '',
+    experience: 0,
+    location: '',
+    portfolio: ''
   });
 
   await user.save();

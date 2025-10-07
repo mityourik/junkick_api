@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { 
   getProjects, 
+  getProjectsByOwner,
   getProject, 
   createProject, 
   updateProject, 
@@ -30,7 +31,13 @@ const teamMemberParamsSchema = z.object({
   userId: z.string().min(1, 'ID пользователя обязателен')
 });
 
+const ownerIdSchema = z.object({
+  ownerId: z.string().min(1, 'ID владельца обязателен')
+});
+
 router.get('/', optionalAuth, validateQuery(projectFiltersSchema), getProjects);
+
+router.get('/owner/:ownerId', optionalAuth, validateParams(ownerIdSchema), getProjectsByOwner);
 
 router.get('/:id', optionalAuth, validateParams(projectIdSchema), getProject);
 

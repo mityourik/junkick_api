@@ -16,7 +16,7 @@ export interface IProject extends Document {
   image: string;
   features: string[];
   requirements: string[];
-  ownerId: mongoose.Types.ObjectId;
+  ownerId: mongoose.Types.ObjectId | number;
   teamMembers: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
@@ -102,8 +102,7 @@ const ProjectSchema = new Schema<IProject>({
     maxlength: 200
   }],
   ownerId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: Schema.Types.Mixed,
     required: true,
     index: true
   },

@@ -3,6 +3,36 @@ import { Project } from '../models/Project.model';
 import { User } from '../models/User.model';
 import { createError, asyncHandler } from '../middleware/error';
 
+export const getProjectsByOwner = asyncHandler(async (req: Request, res: Response) => {
+  const { ownerId } = req.params;
+
+  if (!ownerId) {
+    throw createError('ID владельца обязателен', 400, 'MISSING_OWNER_ID');
+  }
+
+  // Поддерживаем как числовые ID (старые данные), так и ObjectId (новые данные)
+  const filter: any = {};
+  
+  // Проверяем, является ли ownerId числом
+  if (!isNaN(Number(ownerId))) {
+    // Пробуем и как число, и как строку
+    filter.$or = [
+      { ownerId: Number(ownerId) },
+      { ownerId: ownerId }
+    ];
+  } else {
+    // Если не число, используем как есть
+    filter.ownerId = ownerId;
+  }
+
+  const projects = await Project.find(filter)
+    .populate('ownerId', 'name email avatar')
+    .populate('teamMembers', 'name email avatar role')
+    .sort({ createdAt: -1 });
+
+  res.json(projects);
+});
+
 export const getProjects = asyncHandler(async (req: Request, res: Response) => {
   const {
     q,

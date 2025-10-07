@@ -11,18 +11,7 @@ export const registerSchema = z.object({
   name: z.string().min(1, 'Имя обязательно').max(100, 'Имя слишком длинное'),
   email: z.string().email('Некорректный email'),
   password: z.string().min(6, 'Пароль должен содержать минимум 6 символов'),
-  role: z.enum(['разработчик', 'тимлид', 'заказчик']).default('разработчик'),
-  avatar: z.string().optional(),
-  skills: z.union([z.array(z.string()), z.string()]).optional().transform(val => {
-    if (Array.isArray(val)) {
-      return val.length > 0 ? val.join(', ') : 'Не указано';
-    }
-    return val || 'Не указано';
-  }),
-  bio: z.string().max(1000, 'Биография слишком длинная').optional(),
-  experience: z.number().min(0, 'Опыт не может быть отрицательным').max(50, 'Опыт слишком большой').default(0),
-  location: z.string().max(100, 'Локация слишком длинная').optional(),
-  portfolio: z.string().max(500, 'Портфолио слишком длинное').optional()
+  role: z.enum(['разработчик', 'тимлид', 'заказчик']).default('разработчик')
 });
 
 export const userUpdateSchema = z.object({

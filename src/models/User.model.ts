@@ -10,7 +10,7 @@ export interface IUser extends Document {
   bio?: string;
   experience: number;
   location?: string;
-  portfolio?: string;
+  github_link?: string;
   createdAt: Date;
 }
 
@@ -62,7 +62,7 @@ const UserSchema = new Schema<IUser>({
     type: String,
     maxlength: 100
   },
-  portfolio: {
+  github_link: {
     type: String,
     maxlength: 500
   }

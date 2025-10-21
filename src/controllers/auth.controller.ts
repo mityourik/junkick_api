@@ -25,7 +25,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     bio: '',
     experience: 0,
     location: '',
-    portfolio: ''
+    github_link: ''
   });
 
   await user.save();

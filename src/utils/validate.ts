@@ -20,7 +20,7 @@ export const userUpdateSchema = z.object({
   bio: z.string().max(1000, 'Биография слишком длинная').optional(),
   experience: z.number().min(0, 'Опыт не может быть отрицательным').max(50, 'Опыт слишком большой').optional(),
   location: z.string().max(100, 'Локация слишком длинная').optional(),
-  portfolio: z.string().max(500, 'Портфолио слишком длинное').optional(),
+  github_link: z.string().url('Некорректная ссылка на GitHub').max(500, 'Ссылка слишком длинная').optional(),
   role: z.enum(['разработчик', 'тимлид', 'заказчик']).optional()
 });
 

@@ -26,8 +26,7 @@ const UserSchema = new Schema<IUser>({
     required: true,
     unique: true,
     lowercase: true,
-    trim: true,
-    index: true
+    trim: true
   },
   passwordHash: {
     type: String,
@@ -69,7 +68,5 @@ const UserSchema = new Schema<IUser>({
 }, {
   timestamps: { createdAt: true, updatedAt: false }
 });
-
-UserSchema.index({ email: 1 }, { unique: true });
 
 export const User = mongoose.model<IUser>('User', UserSchema);

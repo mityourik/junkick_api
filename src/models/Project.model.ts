@@ -47,8 +47,7 @@ const ProjectSchema = new Schema<IProject>({
   },
   category: {
     type: String,
-    required: true,
-    index: true
+    required: true
   },
   tech: [{
     type: String,
@@ -103,8 +102,7 @@ const ProjectSchema = new Schema<IProject>({
   }],
   ownerId: {
     type: Schema.Types.Mixed,
-    required: true,
-    index: true
+    required: true
   },
   teamMembers: [{
     type: Schema.Types.ObjectId,

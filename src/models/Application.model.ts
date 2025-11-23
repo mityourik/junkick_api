@@ -14,13 +14,11 @@ const ApplicationSchema = new Schema<IApplication>({
   projectId: {
     type: Schema.Types.ObjectId,
     ref: 'Project',
-    required: true,
-    index: true
+    required: true
   },
   userId: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
-    index: true
+    ref: 'User'
   },
   name: {
     type: String,

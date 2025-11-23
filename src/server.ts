@@ -16,7 +16,6 @@ import dictionariesRoutes from './routes/dictionaries.routes';
 
 const app = express();
 
-// Подключение к базе данных
 connectDB();
 
 app.use(helmet());
@@ -53,13 +52,11 @@ app.use('/api/projects', projectsRoutes);
 app.use('/api/applications', applicationsRoutes);
 app.use('/api', dictionariesRoutes);
 
-// Альтернативные маршруты без префикса /api для совместимости с фронтом
 app.use('/auth', authRoutes);
 app.use('/users', usersRoutes);
 app.use('/projects', projectsRoutes);
 app.use('/applications', applicationsRoutes);
 
-// Health check
 app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -68,12 +65,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Favicon handler (to prevent 404 errors)
 app.get('/favicon.ico', (req, res) => {
   res.status(204).end();
 });
 
-// Обработка 404
 app.use(notFoundHandler);
 
 app.use(errorHandler);

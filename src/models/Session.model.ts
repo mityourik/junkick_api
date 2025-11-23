@@ -10,8 +10,7 @@ const SessionSchema = new Schema<ISession>({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   type: {
     type: String,
